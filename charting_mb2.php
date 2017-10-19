@@ -70,7 +70,7 @@
 			array("","","","","",""),
 			array("Early leader","Early issue","Early other","Late leader","Late issue","Late other"),
 			array("Early leader","Early issue","Early other","Late leader","Late issue","Late other"));
-		$year = array("2014","2015","2016","ALL");
+		$year = array("2014","2015","2016","2017","ALL");
 		$xaxis = array(
 			"Students ordered by rank",
 			"Students ordered by rank",
@@ -175,24 +175,29 @@
 		$maketable=$_POST['kind'];
 		$kind=$_POST['diagram'];
 
-		$leftoffs="164";
+		$leftoffs="124";
 		$topoffs="50";
 		$bottoffs="25";
 
 		$graphWidth="500";
 		$graphHeight="150";
 		$graphSpacer=($graphHeight)+10;
-    
-        function makestart($svgstr)
-        {
+	
+		$yearsize="35";
+
+		$arrowWidth="4";
+		$arrowHeight="18";	
+	
+		function makestart($svgstr)
+		{
 				if(!$maketable){
-                        echo "<svg width='800' height='920' style='border:1px solid red;'>";
-                        echo $svgstr;
-                        echo "</svg>"; 
+												echo "<svg width='800' height='920' style='border:1px solid red;'>";
+												echo $svgstr;
+												echo "</svg>"; 
 				}else{
 						echo "</table>";
 				}						
-        }
+		}
     
 		function background($kind,$graphHeight,$graphWidth,$graphSpacer)
 		{
@@ -206,6 +211,10 @@
 			global $yaxis;
 			global $topoffs;
 			global $bottoffs;
+			global $yearsize;
+
+			global $arrowWidth;
+			global $arrowHeight;
 			
 				// ----------------------------============###### Background ######============----------------------------
 				$svgstr="";
@@ -218,21 +227,54 @@
 						$svgstr.="<text x='".(45+((($j+1)%3)*130))."' y='".(22+$legendoffset)."' font-family='Arial Narrow' font-size='20'>".$legendarr[$kind][$j]."</text>";						
 					}
 				}
-
-				for ($i=0;$i<4;$i++){
+			
+				for ($i=0;$i<5;$i++){
 						// Year
 						$svgstr.="<rect x='10' y='".($topoffs+($i*$graphSpacer))."' width='".($graphWidth)."' height='".($graphHeight)."' style='fill:#eee' />";
-						$svgstr.="<text x='17' y='".($graphSpacer+($i*$graphSpacer))."' font-family='Arial Narrow' font-size='60' style='fill:#888' >".$year[$i]."</text>";
-						$svgstr.="<text x='15' y='".(($graphSpacer-2)+($i*$graphSpacer))."' font-family='Arial Narrow' font-size='60' style='fill:#fff' >".$year[$i]."</text>";
+						$svgstr.="<text x='17' y='".($graphSpacer+($i*$graphSpacer))."' font-family='Arial Narrow' font-size='".$yearsize."' style='fill:#888' >".$year[$i]."</text>";
+						$svgstr.="<text x='15' y='".(($graphSpacer-2)+($i*$graphSpacer))."' font-family='Arial Narrow' font-size='".$yearsize."' style='fill:#fff' >".$year[$i]."</text>";
 
 						// Axis text
 						$svgstr.="<text id='xaxislable".$i."' x='".(($leftoffs-60)+((410-$leftoffs)/2))."' y='".(($graphSpacer+34)+($i*$graphSpacer))."' font-family='Arial Narrow' font-size='16' style='fill:#888' >".$xaxis[$kind]."</text>";
 						$svgstr.="<text id='yaxislable".$i."' x='".($leftoffs)."' y='".(($graphSpacer+38)+($i*$graphSpacer))."' font-family='Arial Narrow' font-size='16' style='fill:#888;' transform='rotate(-90,".($leftoffs-18).",".(($graphSpacer+26)+($i*$graphSpacer)).")' >".$yaxis[$kind]."</text>";
 
+				}
+		
+				return $svgstr;		
+		}
+
+		function postground($kind,$graphHeight,$graphWidth,$graphSpacer)
+		{
+			global $leftoffs;
+			global $legendarr;
+			global $colorarr;
+			global $colordarr;
+			global $legendoffset;
+			global $year;
+			global $xaxis;
+			global $yaxis;
+			global $topoffs;
+			global $bottoffs;
+			global $yearsize;
+
+			global $arrowWidth;
+			global $arrowHeight;
+			
+				// ----------------------------============###### Background ######============----------------------------
+			
+				for ($i=0;$i<5;$i++){
 
 						// Bottom and left line
 						$svgstr.="<line x1='10' y1='".(($i+1)*$graphSpacer+15)."' x2='".($graphWidth)."' y2='".(($i+1)*$graphSpacer+15)."' stroke-width='2' stroke='black'/>";
-						$svgstr.="<line x1='".($leftoffs-1)."' y1='".(($i*$graphSpacer)+$topoffs)."' x2='".($leftoffs-1)."' y2='".((($i+1)*$graphHeight)+$topoffs)."' stroke-width='2' stroke='black'/>";
+						$svgstr.="<line x1='".($leftoffs-1)."' y1='".(10+$topoffs+($i*$graphSpacer))."' x2='".($leftoffs-1)."' y2='".(135+$topoffs+($i*$graphSpacer))."' stroke-width='2' stroke='black'/>";
+
+						// Attempt at arrow-beard-head
+						$svgstr.="<polygon points='";
+					  $svgstr.=($leftoffs-1).",".(5+$topoffs+($i*$graphSpacer));
+					  $svgstr.=",".($leftoffs-$arrowWidth-2).",".($arrowHeight+$topoffs+($i*$graphSpacer));
+					  $svgstr.=",".($leftoffs+$arrowWidth).",".($arrowHeight+$topoffs+($i*$graphSpacer));
+						$svgstr.="' stroke-width='2' stroke='none' fill='black' />";
+					
 				}
 		
 				return $svgstr;		
@@ -366,9 +408,11 @@
 
 				}
 
-                makestart($svgstr);
+				$svgstr.=postground($kind,$graphHeight,$graphWidth,$graphSpacer);	
+			
+        makestart($svgstr);
 
-        }
+		}
 
 		function diagram_itemized($kind)
 		{
@@ -534,8 +578,10 @@
 						$oldevesum=$evesum;
 						$oldcommisum=$commisum;				
 				}
-	    
-	            makestart($svgstr);
+
+				$svgstr.=postground($kind,$graphHeight,$graphWidth,$graphSpacer);	
+
+				makestart($svgstr);
 			
 		}
 		
@@ -601,8 +647,10 @@
 				}
 						      
 				//$svgstr.="<text x='15' y='475' font-family='Arial Narrow' font-size='60' style='fill:#fff' >ALL</text>";
-		
-	            makestart();
+
+				$svgstr.=postground($kind,$graphHeight,$graphWidth,$graphSpacer);	
+			
+				makestart();
 					
 		}
 		
@@ -726,7 +774,9 @@
 		      
 				//$svgstr.="<text x='15' y='475' font-family='Arial Narrow' font-size='60' style='fill:#fff' >ALL</text>";
 		
-                makestart($svgstr);
+				$svgstr.=postground($kind,$graphHeight,$graphWidth,$graphSpacer);	
+
+				makestart($svgstr);
 				
 		}
 		
@@ -940,7 +990,8 @@
 				$svgstr.="<text x='15' y='475' font-family='Arial Narrow' font-size='60' style='fill:#fff' >ALL</text>";
 	*/	
                 
-                makestart($svgstr);
+				$svgstr.=postground($kind,$graphHeight,$graphWidth,$graphSpacer);	
+				makestart($svgstr);
 		}
 
 		$log_db = new PDO('sqlite:./GHdata.db');
